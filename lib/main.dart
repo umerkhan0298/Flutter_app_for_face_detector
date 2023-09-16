@@ -5,6 +5,9 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'fun.dart';
 import 'dart:typed_data';
+import 'sucessfull.dart';
+import 'unsucessfull.dart';
+import 'dart:isolate';
 
 Future<void> main() async {
   // Ensure that plugin services are initialized so that `availableCameras()`
@@ -28,7 +31,20 @@ Future<void> main() async {
     ),
   );
 }
+late Timer timerCounter;
+const TIMEMAX = 40;
 
+void countdownTimer(SendPort sendPort) {
+  int counter = TIMEMAX;
+  timerCounter = Timer.periodic(Duration(seconds: 1), (timer) {
+    // print(counter);
+    counter--;
+    sendPort.send(counter);
+    if (counter==0){
+      timerCounter.cancel();
+    }
+  });
+}
 // A screen that allows users to take a picture using a given camera.
 class TakePictureScreen extends StatefulWidget {
   const TakePictureScreen({
@@ -46,8 +62,32 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   late CameraController _controller;
   late Future<void> _initializeControllerFuture;
   late Timer _timer;
+  var outputResponse;
+  int _counter = TIMEMAX;
   bool _isRunning = false; // To track whether the code is running or not.
+  late Isolate _timerIsolate;
+  late ReceivePort _timerReceivePort;
+  
+  /// ID CHALLENGE NAME
+  /// 0  Eye Blinking
+  /// 1  Smiling
+  /// 2  Head Left Rotation
+  /// 3  Head Right Rotation
+  /// 4  Head Left Tilting
+  /// 5  Head Right Tilting 
+  static final List<int> randomChallenges =
+      List<int>.generate(5, (int index) => index)
+        ..shuffle()
+        ..add(5);
 
+  /// Random livliness challenge id.
+  static int _challengeId = randomChallenges[0];
+  int prev_id = _challengeId;
+  /// Random livliness challenge index number in the list.
+  static int _challengeNo = 0;
+
+  /// Random livliness challenge title.
+  String challengeTitle = setChallengeTitle();
   @override
   void initState() {
     super.initState();
@@ -66,19 +106,35 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     // Start a timer to capture frames every 1 second.
     // _startTimer();
 
+    // Listen for countdown updates.
   }
 
   @override
   void dispose() {
-    _timer.cancel(); // Cancel the timer when the widget is disposed.
+    // Terminate the countdown timer isolate.
+    _timerIsolate.kill(priority: Isolate.immediate);
+    _timerReceivePort.close();
     _controller.dispose();
     super.dispose();
   }
 
-   @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Take a picture')),
+      appBar: AppBar(
+        title: Text(challengeTitle),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 10.0),
+            child: Center(
+                child: Text(
+                  'Time left: $_counter',
+                  style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+            )),
+            
+          ),
+        ],),
       body: FutureBuilder<void>(
         future: _initializeControllerFuture,
         builder: (context, snapshot) {
@@ -111,18 +167,41 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       ),
     );
   }
+  void startThreadTimer(){
+    // print("inside startThreadTimer");
+    _timerReceivePort = ReceivePort();
+      // Create and spawn the countdown timer isolate.
+    Isolate.spawn(countdownTimer, _timerReceivePort.sendPort);
 
-  void _startTimer() {
-    _timer = Timer.periodic(Duration(seconds: 2), (timer) {
-      _captureAndSendFrame();
+    _timerReceivePort.listen((message) {
+      setState(() {
+        _counter = message;
+        if (_counter==0){
+        Navigator.pushReplacement(context, 
+          MaterialPageRoute(builder: (context) => Unscucessfull()));
+          _isRunning = false;
+          _counter = TIMEMAX;
+      }
+      });
     });
+  }
+  void _startTimer() {
+    startThreadTimer();
+    _timer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      _captureAndSendFrame();});
     setState(() {
       _isRunning = true;
     });
   }
+void stopThreadTimer(){
+  _timerReceivePort.close();
 
+}
   void _stopTimer() {
     _timer.cancel();
+    // stop thread timer
+    stopThreadTimer();
+    // timerCounter.cancel();
     setState(() {
       _isRunning = false;
     });
@@ -144,7 +223,7 @@ void _captureAndSendFrame() async {
     String base64string = base64.encode(imagebytes);
     Map<String, dynamic> fileMap = {
       'image': base64string,
-      'challenge': "1",
+      'challenge': _challengeId,
     };
     String jsonEncoded = json.encode(fileMap);
     try {
@@ -163,9 +242,30 @@ void _captureAndSendFrame() async {
     if (response.statusCode == 200) {
       print("Response received in ${duration.inMilliseconds} milliseconds");
       print(response.data);
-      setState(() {
-        // ma = "success";
-      });
+      if (response.data == "True"){
+        _challengeNo++;
+        print("challenge no ${_challengeNo}, challenge id ${challengeTitle},length of challenges ${randomChallenges.length}");
+        if (_challengeNo < randomChallenges.length) {
+          _challengeId = randomChallenges[_challengeNo];
+          // prev_id = _challengeId;
+          challengeTitle = setChallengeTitle();
+          stopThreadTimer();
+          // startThreadTimer();
+          _startTimer();
+        }
+        else{
+            _stopTimer();
+            Navigator.pushReplacement(context, 
+              MaterialPageRoute(builder: (context) => Scucessfull()));
+        }
+        // setState(() {
+          
+        // });
+        }
+      outputResponse = response.data;
+      // if outputResponse == true{
+
+      // }
       }
     } catch (e) {
       debugPrint(e.toString());
@@ -176,4 +276,28 @@ void _captureAndSendFrame() async {
     print(e);
   }
 }
+static String setChallengeTitle() {
+    switch (_challengeId) {
+      case 0:
+        return "Eye Blinking Challenge";
+
+      case 1:
+        return "Smiling Challenge";
+
+      case 2:
+        return "Head Left Rotating Challenge";
+
+      case 3:
+        return "Head Right Rotating Challenge";
+
+      case 4:
+        return "Head Left Tilting Challenge";
+
+      case 5:
+        return "Head Right Tilting Challenge";
+
+      default:
+        return "";
+    }
+  }
 }
