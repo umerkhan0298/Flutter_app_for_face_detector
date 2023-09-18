@@ -22,7 +22,7 @@ class Unscucessfull extends StatelessWidget {
           constraints: const BoxConstraints.expand(),
           decoration: const BoxDecoration(
               image: DecorationImage(
-                  image: AssetImage("assets/oops.jpg"),
+                  image: AssetImage("assets/images/oops.jpg"),
                   fit: BoxFit.cover)),
           child: Center(
             // Center is a layout widget. It takes a single child and positions it

@@ -2,6 +2,7 @@ import 'dart:async';
 // import 'dart:io';
 import 'dart:convert';
 import 'package:camera/camera.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'fun.dart';
 import 'dart:typed_data';
@@ -230,7 +231,7 @@ void _captureAndSendFrame() async {
       print("start to send a frame");
       final startTime = DateTime.now(); // Record the start time
 
-    var response = await Abc.postData(
+    Response response = await Abc.postData(
       "http://192.168.10.64:5000/analyze_frame",
       // "http://192.168.18.7:5000/analyze_frame",
       jsonEncoded,
@@ -240,11 +241,25 @@ void _captureAndSendFrame() async {
     final duration = endTime.difference(startTime);
 
     if (response.statusCode == 200) {
+      // final Map<String, dynamic> data = response.data;
       print("Response received in ${duration.inMilliseconds} milliseconds");
-      print(response.data);
-      if (response.data == "True"){
+      // if (response.data != null && response.data is Map<String, dynamic>) {
+        // Parse the JSON response
+        Map<String, dynamic> data = response.data;
+
+        // Access the "message" and "challenge_ID" fields
+        String message = data["message"];
+        int challengeId = data["challenge_ID"];
+
+        // Now you can use the message and challengeId in your Flutter application
+        print("Message: $message");
+        print("Challenge ID: $challengeId");
+      // } else {
+      //   // Handle the case where response.data is null or not in the expected format
+      //   print("Invalid or missing response data");}
+      if (response.data["message"] == "True" && challengeId == _challengeId){
         _challengeNo++;
-        print("challenge no ${_challengeNo}, challenge id ${challengeTitle},length of challenges ${randomChallenges.length}");
+        print("challenge no ${_challengeNo}, challenge id ${_challengeId},length of challenges ${randomChallenges.length}");
         if (_challengeNo < randomChallenges.length) {
           _challengeId = randomChallenges[_challengeNo];
           // prev_id = _challengeId;
@@ -255,6 +270,7 @@ void _captureAndSendFrame() async {
         }
         else{
             _stopTimer();
+            print("isrunning ${_isRunning}");
             Navigator.pushReplacement(context, 
               MaterialPageRoute(builder: (context) => Scucessfull()));
         }

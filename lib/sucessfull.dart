@@ -21,7 +21,7 @@ class Scucessfull extends StatelessWidget {
           constraints: const BoxConstraints.expand(),
           decoration: const BoxDecoration(
               image: DecorationImage(
-                  image: AssetImage("assets/wow.png"),
+                  image: AssetImage("assets/images/wow.png"),
                   fit: BoxFit.cover)),
           child: Center(
             // Center is a layout widget. It takes a single child and positions it
