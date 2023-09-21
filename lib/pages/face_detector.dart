@@ -1,37 +1,14 @@
 import 'dart:async';
-// import 'dart:io';
 import 'dart:convert';
 import 'package:camera/camera.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'fun.dart';
+import 'request.dart';
 import 'dart:typed_data';
 import 'sucessfull.dart';
 import 'unsucessfull.dart';
 import 'dart:isolate';
 
-// Future<void> main() async {
-//   // Ensure that plugin services are initialized so that `availableCameras()`
-//   // can be called before `runApp()`
-//   WidgetsFlutterBinding.ensureInitialized();
-
-//   // Obtain a list of the available cameras on the device.
-//   final cameras = await availableCameras();
-
-//   // Get a specific camera from the list of available cameras.
-//   final firstCamera = cameras.firstWhere(
-//       (element) => element.lensDirection == CameraLensDirection.front);
-
-//   runApp(
-//     MaterialApp(
-//       theme: ThemeData.dark(),
-//       home: TakePictureScreen(
-//         // Pass the appropriate camera to the TakePictureScreen widget.
-//         camera: firstCamera,
-//       ),
-//     ),
-//   );
-// }
 late Timer timerCounter;
 const TIMEMAX = 40;
 
@@ -45,6 +22,31 @@ void countdownTimer(SendPort sendPort) {
       timerCounter.cancel();
     }
   });
+}
+
+class RectanglePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    print("inside painter");
+    final Paint paint = Paint()
+      ..color = Colors.red // Rectangle color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0; // Rectangle border width
+
+    final Rect rect = Rect.fromLTRB(
+      140, // X-coordinate of the top-left corner
+      250, // Y-coordinate of the top-left corner
+      220, // X-coordinate of the bottom-right corner
+      320, // Y-coordinate of the bottom-right corner
+    );
+
+    canvas.drawRect(rect, paint); // Draw the rectangle on the canvas
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return false;
+  }
 }
 
 // A screen that allows users to take a picture using a given camera.
@@ -145,12 +147,39 @@ class TakePictureScreenState extends State<TakePictureScreen> {
             return Column(
               children: [
                 Expanded(
-                  child: ColorFiltered(
-                    colorFilter: const ColorFilter.mode(
-                      Colors.white,
-                      BlendMode.softLight,
-                    ),
-                    child: CameraPreview(_controller),
+                  
+                  child: Stack(
+                    children: <Widget>[
+                      // Positioned(
+                        // left: 0,
+                        // top: 0,
+                        // width: 50,
+                        // height: 50,
+                      // )
+                      // ColorFiltered(
+                      //   colorFilter: const ColorFilter.mode(
+                      //     Colors.white,
+                      //     BlendMode.softLight,
+                      //   ),
+                      // child:
+                      Transform.scale(
+                        scaleX: 1,
+                        scaleY: 1.3,
+                        alignment: Alignment.topCenter,
+
+
+                        // child: AspectRatio(
+                        //   aspectRatio: _controller.value.aspectRatio,
+                        child: CameraPreview(_controller),
+                        // ),
+                        //  ),
+                      ),
+                      // ),
+                      CustomPaint(
+                        // size: Size(500, 500),
+                        painter: RectanglePainter(),
+                      ),
+                    ],
                   ),
                 ),
                 Row(
