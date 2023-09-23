@@ -25,24 +25,33 @@ void countdownTimer(SendPort sendPort) {
 }
 
 class RectanglePainter extends CustomPainter {
+  final int challengeId;
+  RectanglePainter(this.challengeId);
   @override
   void paint(Canvas canvas, Size size) {
-    print("inside painter");
-    final Paint paint = Paint()
-      ..color = Colors.red // Rectangle color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0; // Rectangle border width
+    // if (challengeId == 6) {
+      // print("inside painter");
+      final Paint paint = Paint()
+        ..color = Colors.red // Rectangle color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0; // Rectangle border width
 
-    final Rect rect = Rect.fromLTRB(
-      140, // X-coordinate of the top-left corner
-      250, // Y-coordinate of the top-left corner
-      220, // X-coordinate of the bottom-right corner
-      320, // Y-coordinate of the bottom-right corner
-    );
-
-    canvas.drawRect(rect, paint); // Draw the rectangle on the canvas
+      final Rect rect_nose = Rect.fromLTRB(
+        140, // X-coordinate of the top-left corner
+        250, // Y-coordinate of the top-left corner
+        220, // X-coordinate of the bottom-right corner
+        320, // Y-coordinate of the bottom-right corner
+      );
+      final Rect rect_face = Rect.fromLTRB(
+        70, // X-coordinate of the top-left corner
+        90, // Y-coordinate of the top-left corner
+        290, // X-coordinate of the bottom-right corner
+        420, // Y-coordinate of the bottom-right corner
+      );
+    canvas.drawRect(rect_nose, paint); // Draw the rectangle of nose on the canvas
+    canvas.drawRect(rect_face, paint); // Draw the rectangle of face on the canvas
+  // }
   }
-
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
     return false;
@@ -79,10 +88,11 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   /// 3  Head Right Rotation
   /// 4  Head Left Tilting
   /// 5  Head Right Tilting
+  /// 6  Nose Placement with Frontal Upright Face
   static final List<int> randomChallenges =
-      List<int>.generate(5, (int index) => index)
+      List<int>.generate(6, (int index) => index)
         ..shuffle()
-        ..add(5);
+        ..add(6);
 
   /// Random livliness challenge id.
   static int _challengeId = randomChallenges[0];
@@ -177,7 +187,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                       // ),
                       CustomPaint(
                         // size: Size(500, 500),
-                        painter: RectanglePainter(),
+                        painter: RectanglePainter(_challengeId),
                       ),
                     ],
                   ),
@@ -356,6 +366,9 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
       case 5:
         return "Head Right Tilting Challenge";
+
+      case 6:
+        return "Frontal Upright Face with \n Nose in Box Challenge";
 
       default:
         return "";
