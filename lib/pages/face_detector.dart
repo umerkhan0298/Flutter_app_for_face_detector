@@ -29,7 +29,7 @@ class RectanglePainter extends CustomPainter {
   RectanglePainter(this.challengeId);
   @override
   void paint(Canvas canvas, Size size) {
-    // if (challengeId == 6) {
+    if (challengeId == 6) {
       // print("inside painter");
       final Paint paint = Paint()
         ..color = Colors.red // Rectangle color
@@ -50,7 +50,7 @@ class RectanglePainter extends CustomPainter {
       );
     canvas.drawRect(rect_nose, paint); // Draw the rectangle of nose on the canvas
     canvas.drawRect(rect_face, paint); // Draw the rectangle of face on the canvas
-  // }
+  }
   }
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
@@ -285,7 +285,8 @@ class TakePictureScreenState extends State<TakePictureScreen> {
         final startTime = DateTime.now(); // Record the start time
 
         Response response = await Abc.postData(
-          "http://192.168.10.64:5000/analyze_frame",
+          "http://192.168.10.73:5000/analyze_frame",
+          // "http://192.168.10.64:5000/analyze_frame",
           // "http://192.168.18.7:5000/analyze_frame",
           jsonEncoded,
         );

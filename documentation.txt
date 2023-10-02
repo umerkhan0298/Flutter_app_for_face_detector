@@ -1,0 +1,93 @@
+# Flutter Facial Expression Analysis App
+
+This Flutter application captures images from the device camera, analyzes facial expressions, and communicates with a server to determine the success of various facial expression challenges. The app uses camera functionality, timers, and network requests to achieve this.
+
+## Features
+
+### Camera Integration
+- The app integrates with the device's camera using the `camera` package to capture images.
+
+### Challenge-based Analysis
+- The app presents a series of facial expression challenges, including eye blinking, smiling, head rotation, head tilting, and nose placement.
+- Challenges are selected randomly, and the user must complete each challenge to move to the next.
+- The current challenge is displayed in the app's title bar.
+
+### Timer and Countdown
+- A countdown timer starts when a challenge begins and counts down from a predefined time limit (default: 40 seconds).
+- The countdown timer is displayed in the app's title bar.
+
+### Custom Paint for Nose Placement Challenge
+- For the "Nose Placement Challenge," a custom painter (`RectanglePainter`) is used to draw rectangles on the camera preview to indicate the desired nose and face placement areas.
+
+### Communication with Server
+- The app captures images and encodes them as base64 strings.
+- It sends the base64-encoded image and the challenge ID to a server for analysis.
+- The server responds with a success message indicating whether the challenge was completed successfully.
+
+### Challenge Progression
+- After successfully completing a challenge, the app proceeds to the next challenge until all challenges have been completed.
+- Upon completing all challenges, the user is redirected to a "Successful" screen.
+
+## Usage
+
+1. Ensure that the necessary packages (e.g., `camera`, `dio`) are added to your Flutter project.
+2. Run the Flutter app on a compatible device.
+
+## Code Structure
+
+The code is structured as follows:
+
+- `TakePictureScreen` class: The main screen where the camera preview and challenges are displayed.
+  - Manages camera initialization, image capture, and challenge progression.
+  - Utilizes custom painters to draw rectangles for the "Nose Placement Challenge."
+  
+- `countdownTimer` function: An isolate function for the countdown timer.
+  - Sends countdown updates to the main thread.
+
+- `RectanglePainter` class: A custom painter for drawing rectangles on the camera preview.
+
+- Challenge-related logic: The code includes logic for challenge selection, challenge titles, and challenge completion handling.
+
+- Network communication: The app communicates with a server to send images and receive challenge analysis results using the `dio` package.
+
+- Timer management: Timers are used to capture images periodically and track the countdown timer.
+
+## Challenges
+
+The app defines and manages the following facial expression challenges:
+
+1. **Eye Blinking Challenge**
+   - Detects eye blinking by analyzing the eyes' open or closed state.
+   
+2. **Smiling Challenge**
+   - Detects smiling by analyzing facial landmarks.
+   
+3. **Head Left Rotation Challenge**
+   - Detects left head rotation based on eyebrow lengths.
+   
+4. **Head Right Rotation Challenge**
+   - Detects right head rotation based on eyebrow lengths.
+   
+5. **Head Left Tilting Challenge**
+   - Detects left head tilting based on facial tilt angles.
+   
+6. **Head Right Tilting Challenge**
+   - Detects right head tilting based on facial tilt angles.
+   
+7. **Nose Placement Challenge**
+   - Checks if the nose is correctly placed within predefined areas on the camera preview. Also ensures the face is frontal.
+
+
+## Server Integration
+
+The app communicates with a server at the following endpoint:
+- `http://192.168.10.73:5000/analyze_frame` (You can change this URL as required)
+
+The server should accept POST requests with JSON-encoded image data and challenge IDs and respond with challenge analysis results.
+
+## Dependencies
+
+- `camera`: For camera integration.
+- `dio`: For network communication.
+- `dart:async`: For asynchronous operations.
+- `dart:convert`: For JSON encoding and decoding.
